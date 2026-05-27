@@ -1,0 +1,37 @@
+name: Deploy Multi-Container App to EB
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build client image
+        run: docker build -t 103sachin/react-test -f ./client/Dockerfile.dev ./client
+
+      - name: Run tests
+        run: docker run -e CI=true 103sachin/react-test npm run test
+
+      - name: Build and push images
+        run: |
+          docker build -t 103sachin/multi-nginx ./nginx
+          docker build -t 103sachin/multi-server ./server
+          docker build -t 103sachin/multi-client ./client
+          docker build -t 103sachin/multi-worker ./worker
+
+          docker push 103sachin/multi-nginx
+          docker push 103sachin/multi-server
+          docker push 103sachin/multi-client
+          docker push 103sachin/multi-worker
