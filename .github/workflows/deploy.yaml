@@ -35,3 +35,15 @@ jobs:
           docker push 103sachin/multi-server
           docker push 103sachin/multi-client
           docker push 103sachin/multi-worker
+      
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v20
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_KEY }}
+          application_name: frontend
+          environment_name: frontend-env
+          version_label: ${{ github.sha }}
+          region: ap-south-1
+          existing_bucket_name: elasticbeanstalk-ap-south-1-203918873006
+          deployment_package: deploy.zip
